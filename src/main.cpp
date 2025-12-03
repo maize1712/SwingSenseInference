@@ -66,9 +66,9 @@ alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 const tflite::Model*      g_model       = nullptr;
 tflite::MicroInterpreter* g_interpreter = nullptr;
 
-// We have 2 classes: 0 = BAD, 1 = GOOD
-constexpr int kLabelCount = 2;
-const char* kLabels[kLabelCount] = {"Bad", "Good"};
+// We have 4 classes: 0 = GOOD, 1 = NO_FOLLOW, 2 = ENDS_LOW, 3 = STARTS_HIGH
+constexpr int kLabelCount = 4;
+const char* kLabels[kLabelCount] = {"GOOD", "NO_FOLLOW", "ENDS_LOW", "STARTS_HIGH"};
 
 // You can either let the model handle normalization via a Normalization layer,
 // or replicate the mean/std we used in Colab. Fill these from Colab if needed.
@@ -321,10 +321,13 @@ void RunClassification() {
   }
   
   const char* label = kLabels[best_idx];
-  bool isGood = (best_idx == 1);   // index 1 = GOOD
+  bool isGood = (best_idx == 0);   // index 0 = GOOD
 
   Serial.print("PREDICTION: ");
-  Serial.println(label);
+  Serial.print(label);
+  Serial.print(" (confidence: ");
+  Serial.print(best_score, 4);
+  Serial.println(")");
 
   // LEDs (commented out until you have resistors)
   /*
@@ -335,7 +338,7 @@ void RunClassification() {
   if (isGood) {
     OledPrintCentered("GOOD SWING", "Nice form!");
   } else {
-    OledPrintCentered("BAD SWING", "Fix your form");
+    OledPrintCentered(label, "Needs work");
   }
 
   g_showingResult = true;
