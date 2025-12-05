@@ -4,6 +4,8 @@
 // OLED: U8g2 HW I2C, SSD1306 128x64 (the one on the XIAO expansion board)
 #include <U8x8lib.h>
 
+#include <stdio.h>
+
 //// debounce
 
 
@@ -43,7 +45,7 @@ static const float GYR_LSB_PER_DPS = 131.0f;
 
 // Button (same as data collection)
 // D7 = GPIO 7 on Seeed XIAO ESP32-S3
-#define RECORDING_PIN D7
+#define RECORDING_PIN D9
 
 // LEDs (pick two free pins on the header)
 // D8 = GPIO 47, D9 = GPIO 48 on Seeed XIAO ESP32-S3
@@ -329,6 +331,9 @@ void RunClassification() {
   Serial.print(best_score, 4);
   Serial.println(")");
 
+  char confStr[32];
+  snprintf(confStr, sizeof(confStr), "Conf: %.4f", best_score);
+
   // LEDs (commented out until you have resistors)
   /*
   digitalWrite(LED_GOOD_PIN, isGood ? HIGH : LOW);
@@ -336,9 +341,9 @@ void RunClassification() {
   */
 
   if (isGood) {
-    OledPrintCentered("GOOD SWING", "Nice form!");
+    OledPrintCentered("GOOD SWING", confStr);
   } else {
-    OledPrintCentered(label, "Needs work");
+    OledPrintCentered(label, confStr);
   }
 
   g_showingResult = true;
